@@ -4,7 +4,7 @@ Basic Python script to scrape the OpenRice Mobile website and store the data in 
 
 Usage:
 
-$ pythoh feedme.py [starting ID] [ending ID]
+$ python feedme.py [starting ID] [ending ID]
 
 Options:
 
