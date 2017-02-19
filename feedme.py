@@ -3,6 +3,7 @@
 
 #
 # Feed Me! - OpenRice Mobile Website Scraper
+# Copyright (c) 2017 loadfix
 #
 
 from bs4 import BeautifulSoup
