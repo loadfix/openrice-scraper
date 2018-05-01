@@ -1,11 +1,10 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/bin/python27
 # -*- coding: utf-8 -*-
 
 #
 # Feed Me! - OpenRice Mobile Website Scraper
 # Copyright (c) 2017 loadfix
 #
-
 from bs4 import BeautifulSoup
 import urllib2
 import re
@@ -38,13 +37,13 @@ elif len(sys.argv) == 3:
       start = int(sys.argv[1])
       end = int(sys.argv[2])
    except:
-      print "Incorrect arguments"
+      print("Incorrect arguments")
       sys.exit(1)
 else:
-   print "Incorrect number of arguments"
+   print( "Incorrect number of arguments")
    sys.exit(1)
 
-print "Starting at " + str(start) + " and ending at " + str(end)
+print("Starting at " + str(start) + " and ending at " + str(end))
 
 # Output CSV File
 outfile = 'restaurants-' + str(start) + '-' + str(end) + '.csv'
@@ -282,9 +281,9 @@ def parsesearch(restaurant, searchresults):
 
 # Catch Control-C
 def signal_handler(signal, frame):
-   print "Stoped at restaurant ID: " + str(restaurant['rest_id'])
+   print("Stoped at restaurant ID: " + str(restaurant['rest_id']))
    end_time = datetime.now()
-   print "\n" + str(count) + " active restaurants processed in " + str(end_time - start_time) + " seconds\n"
+   print("\n" + str(count) + " active restaurants processed in " + str(end_time - start_time) + " seconds\n")
    sys.exit(0)
 
 # Use the Google Maps API to attempt to retrieve location data
@@ -310,7 +309,7 @@ def getgeolocation(address):
       r = requests.get(searchurl, params=params)
    
    if debug == True:
-      print "Google Maps API Query: " + r.url
+      print("Google Maps API Query: " + r.url)
    
    status = r.json()['status']
    results = r.json()['results']
@@ -318,7 +317,7 @@ def getgeolocation(address):
    if status == 'OVER_QUERY_LIMIT':
       # Used Google API too much today
       # Limits are 2,500 for anonymous users and 100,000 for registered users (per day)
-      print "Exceeded Google API Query Limit for today."
+      print("Exceeded Google API Query Limit for today.")
       
       # Skip geolocation for now
       #pass
@@ -379,7 +378,7 @@ with open(outfile, 'w') as csvfile:
             time.sleep(5)
       
          if failures > 4:
-            print "Failed to retrieve URL 5 times, exiting..."
+            print("Failed to retrieve URL 5 times, exiting...")
             sys.exit(1)
          
       soup = BeautifulSoup(response.read(), 'html.parser')
@@ -396,11 +395,11 @@ with open(outfile, 'w') as csvfile:
       try:
          if soup.find_all('a')[4].text == 'OpenRice Shenzhen Home':
             if debug:
-               print "Found Shenzhen restaurant at " + str(restaurant['rest_id']) + ", skipping..."
+               print("Found Shenzhen restaurant at " + str(restaurant['rest_id']) + ", skipping...")
                continue
          if soup.find_all('a')[4].text == 'OpenRice Macau Home':
             if debug:
-               print "Found Macau restaurant at " + str(restaurant['rest_id']) + ", skipping..."
+               print("Found Macau restaurant at " + str(restaurant['rest_id']) + ", skipping...")
                continue
       except:
          pass
@@ -426,27 +425,27 @@ with open(outfile, 'w') as csvfile:
          if len(re.findall('[%s]' % zhon.hanzi.characters, restaurant['name_e'].decode('UTF-8').split('  ')[0])) > 0:
             # Chinese characters are detected in the first element, assume no english
             if debug:
-               print "FOUND CHINESE ONLY NAME"
+               print("FOUND CHINESE ONLY NAME")
             try:
                restaurant['name_c'] = restaurant['name_e'].decode('UTF-8').split('  ')[0]
                if debug:
-                  print "CHINESE NAME IS NOW: " + restaurant['name_c']
+                  print("CHINESE NAME IS NOW: " + restaurant['name_c'])
                   restaurant['name_e'] = ''
             except:
                if debug:
-                  print "CAUGHT EXCEPTION #1"
+                  print("CAUGHT EXCEPTION #1")
          else:
             # Try to seperate chinese and english
             try:
                restaurant['name_e'], restaurant['name_c'] = restaurant['name_e'].split('  ')
             except:
                if debug:
-                  print "CAUGHT EXCEPTION #2"
+                  print("CAUGHT EXCEPTION #2")
                restaurant['name_e'] = re.split('  ', restaurant['name_e'])[0].strip()
       
       if debug:
-         print "Processing ID:" + str(restaurant['rest_id']) + "\tEnglish: " + restaurant['name_e'] + \
-            "\t\t\t  Chinese: " + restaurant['name_c'] + '(' + str(count) + ')'
+         print("Processing ID:" + str(restaurant['rest_id']) + "\tEnglish: " + restaurant['name_e'] + \
+            "\t\t\t  Chinese: " + restaurant['name_c'] + '(' + str(count) + ')')
 
       # Do not write closed restaurants to CSV file
       if restaurant['closed'] == 1:
@@ -596,7 +595,7 @@ with open(outfile, 'w') as csvfile:
       # Write the restaurant data
       try:
          if debug:  
-            print "\n===>> Area: " + restaurant['area'] + " District: " + restaurant['district'] + "\n"
+            print("\n===>> Area: " + restaurant['area'] + " District: " + restaurant['district'] + "\n")
          
          writer.writerow(restaurant)
       except:
@@ -604,5 +603,5 @@ with open(outfile, 'w') as csvfile:
 
 # End of main program
 end_time = datetime.now()
-print "\n" + str(count) + " active restaurants processed in " + str(end_time - start_time) + " seconds\n"        
+print("\n" + str(count) + " active restaurants processed in " + str(end_time - start_time) + " seconds\n")
    
