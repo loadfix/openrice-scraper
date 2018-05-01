@@ -445,7 +445,8 @@ with open(outfile, 'w') as csvfile:
                restaurant['name_e'] = re.split('  ', restaurant['name_e'])[0].strip()
       
       if debug:
-         print "Processing ID:" + str(restaurant['rest_id']) + "\tEnglish: " + restaurant['name_e'] + "\t\t\t  Chinese: " + restaurant['name_c'] + '(' + str(count) + ')'
+         print "Processing ID:" + str(restaurant['rest_id']) + "\tEnglish: " + restaurant['name_e'] + \
+            "\t\t\t  Chinese: " + restaurant['name_c'] + '(' + str(count) + ')'
 
       # Do not write closed restaurants to CSV file
       if restaurant['closed'] == 1:
