@@ -6,8 +6,9 @@
 # Copyright (c) 2017 loadfix
 #
 from bs4 import BeautifulSoup
-import urllib2
+import urllib3
 import re
+import sys
 import csv
 import requests
 import signal
@@ -364,7 +365,8 @@ with open(outfile, 'w') as csvfile:
       # Exit on five failed http requests
       while True:
          try:
-            response = urllib2.urlopen(url)
+            http = urllib3.PoolManager()
+            response = http.request('GET',url)
             break
          except:
             failures = failures + 1
@@ -374,6 +376,7 @@ with open(outfile, 'w') as csvfile:
             print("Failed to retrieve URL 5 times, exiting...")
             sys.exit(1)
          
+      print("at soup")
       soup = BeautifulSoup(response.read(), 'html.parser')
       arraylen = len(soup.find_all('span', { 'class': 'basic_info_spacing'}))
    
