@@ -11,14 +11,9 @@ import re
 import csv
 import requests
 import signal
-import sys
 import zhon.hanzi
 import time
 from datetime import datetime
-
-# Set codepage
-reload(sys)  
-sys.setdefaultencoding('utf8')
 
 # ---------- Start of User Configurable Variables ------------- #
 apikey = ''
