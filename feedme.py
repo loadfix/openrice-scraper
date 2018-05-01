@@ -376,7 +376,6 @@ with open(outfile, 'w') as csvfile:
             print("Failed to retrieve URL 5 times, exiting...")
             sys.exit(1)
          
-      print("at soup")
       soup = BeautifulSoup(response.read(), 'html.parser')
       arraylen = len(soup.find_all('span', { 'class': 'basic_info_spacing'}))
    
