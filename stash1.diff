@@ -1,0 +1,120 @@
+
+diff --git a/feedme.py b/feedme.py
+index e075e21..7339e3f 100644
+--- a/feedme.py
++++ b/feedme.py
+@@ -6,7 +6,7 @@
+ # Copyright (c) 2017 loadfix
+ #
+ from bs4 import BeautifulSoup
+-import urllib3
++import mechanicalsoup
+ import re
+ import sys
+ import csv
+@@ -25,6 +25,9 @@ end = 1000000
+ debug = True
+ # ---------- End of User Configurable Variables --------------- #
+ 
++# Setup browser
++browser = mechanicalsoup.StatefulBrowser()
++
+ # Check arguments
+ if len(sys.argv) == 1:
+    pass
+@@ -365,8 +368,7 @@ with open(outfile, 'w') as csvfile:
+       # Exit on five failed http requests
+       while True:
+          try:
+-            http = urllib3.PoolManager()
+-            response = http.request('GET',url)
++            response = browser.open(url)
+             break
+          except:
+             failures = failures + 1
+@@ -376,7 +378,7 @@ with open(outfile, 'w') as csvfile:
+             print("Failed to retrieve URL 5 times, exiting...")
+             sys.exit(1)
+          
+-      soup = BeautifulSoup(response.read(), 'html.parser')
++      soup = BeautifulSoup(response.text, 'html.parser')
+       arraylen = len(soup.find_all('span', { 'class': 'basic_info_spacing'}))
+    
+       # Check if there is a restaurant at this index / OpenRice ID
+@@ -384,7 +386,7 @@ with open(outfile, 'w') as csvfile:
+          continue
+ 
+       # OpenRice restaurant ID
+-      restaurant['rest_id'] = x
++      restaurant['rest_id'] = str(x)
+ 
+       # Skip if this is a Shenzhen restaurant
+       try:
+@@ -403,21 +405,26 @@ with open(outfile, 'w') as csvfile:
+ 
+       # First span tag contains the restaurant name
+       restaurant['name_e'] = spans[0].text.encode('utf-8').strip()
+-      if restaurant['name_e'].find('(Closed)') != -1:
++
++      if restaurant['name_e'].decode().find('(Closed)') != -1:
+          restaurant['closed'] = 1
+-      elif restaurant['name_e'].find('(Relocated') != -1:
++      elif restaurant['name_e'].decode().find('(Relocated') != -1:
+          # Skip relocated restaurants
++         if debug:
++               print("Skipping relocated restaurand ID: " + restaurant['rest_id'])
+          continue
+       else:
++         if debug:
++               print("Restaurant " + restaurant['name_e'].decode() + " is closed")
+          restaurant['closed'] = 0
+          count = count + 1
+-      
++
+       # Remove "(Closed)" in restaurant name
+-      restaurant['name_e'] = re.split('\(', restaurant['name_e'])[0].strip()
++      restaurant['name_e'] = re.split('\(', restaurant['name_e'].decode())[0].strip()
+  
+       # Detect Chinese characters in title
+-      if len(re.findall('[%s]' % zhon.hanzi.characters, restaurant['name_e'].decode('UTF-8'))) > 0:
+-         if len(re.findall('[%s]' % zhon.hanzi.characters, restaurant['name_e'].decode('UTF-8').split('  ')[0])) > 0:
++      if len(re.findall('[%s]' % zhon.hanzi.characters, restaurant['name_e'])) > 0:
++         if len(re.findall('[%s]' % zhon.hanzi.characters, restaurant['name_e'].split('  ')[0])) > 0:
+             # Chinese characters are detected in the first element, assume no english
+             if debug:
+                print("FOUND CHINESE ONLY NAME")
+@@ -511,13 +518,13 @@ with open(outfile, 'w') as csvfile:
+ 
+       # Find the restaurant area from the address
+       if restaurant['address_e'] != "":
+-         for key in hkareas.iterkeys():
+-            if restaurant['address_e'].find(key) > 0:
++         for key in hkareas.keys():
++            if restaurant['address_e'].decode().find(key) > 0:
+                restaurant['area'] = key
+                restaurant['district'] = hkareas[key]
+                break
+       else:
+-          for key in hkareas_c.iterkeys():
++          for key in hkareas_c.keys():
+             if restaurant['address_c'].find(key) > 0:
+                restaurant['area'] = hkareas_c[key]
+                restaurant['district'] = hkareas[hkareas_c[key]]
+@@ -528,7 +535,7 @@ with open(outfile, 'w') as csvfile:
+       
+          # Try English address 
+          if restaurant['address_e'] != "":
+-            searchresults = getgeolocation(restaurant['address_e'] + ",Hong Kong")
++            searchresults = getgeolocation(restaurant['address_e'].decode() + ",Hong Kong")
+             restaurant = parsesearch(restaurant, searchresults)
+             
+          if restaurant['lat'] != "" and restaurant['lng'] != "" and restaurant['area'] != "" and restaurant['district'] != '':
+@@ -585,7 +592,7 @@ with open(outfile, 'w') as csvfile:
+          
+          if debug:
+             # Everything failed!!! Wait for keypress
+-            raw_input('Press enter to continue to next restaurant... ')
++            input('Press enter to continue to next restaurant... ')
+      
+       # Write the restaurant data
+       try:
